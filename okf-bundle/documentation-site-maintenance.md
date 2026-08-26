@@ -66,16 +66,28 @@ Removed packages (e.g. Dynamic Links) have no TypeDoc module — fall back to `m
 - [ ] `yarn reference:api` succeeds
 - [ ] All `docs.json` redirect targets verified (200)
 - [ ] New legacy paths identified and redirected or explicitly deferred with rationale
-- [ ] Markdown/spellcheck when `docs/**` changed — [validation checklist § lint and formatting](testing/validation-checklist.md#lint-and-formatting) (`yarn lint:markdown` / `yarn lint:spellcheck` glob `docs/**` only; OKF-only diffs do not run those)
+- [ ] Markdown/spellcheck/link check when `docs/**` changed — [validation checklist § lint and formatting](testing/validation-checklist.md#lint-and-formatting) (`yarn lint:markdown` / `yarn lint:spellcheck` / `yarn lint:docs-links` glob `docs/**` only; OKF-only diffs do not run those)
 
 **Validation commands:** [validation checklist § API reference](testing/validation-checklist.md#api-reference-and-type-parity), [§ lint and formatting](testing/validation-checklist.md#lint-and-formatting).
+
+## Docs.page link check (CI)
+
+<a id="docs-page-link-check-ci"></a>
+
+`yarn lint:docs-links` runs `@docs.page/cli` `check` (pinned in root `package.json`) and is a step in `.github/workflows/docs.yml`.
+
+`docs check` defaults every check to **error**. The yarn script is `docs check . --external-links warn` — the only override. npmjs, Stack Overflow, and similar hosts often return **403** to automated link checkers even when the URL is valid in a browser.
+
+**Agents** ([validation checklist § docs.page link check](testing/validation-checklist.md#docs-page-link-check)): fix every **error**; the **only** acceptable non-fix is an **external** **warn** from bot/WAF **403** / aborted fetch — do not rewrite those links or relax other check severities.
+
+Sweep real 404s before enabling the CI step on a branch so the first green run stays bisectable.
 
 ## docs.json edits (non-TypeDoc)
 
 When adding user docs pages only (sidebar, tabs, content under `docs/`):
 
 - Add sidebar entries in `docs.json` when new pages ship.
-- Run markdown/spellcheck per [validation checklist](testing/validation-checklist.md#lint-and-formatting).
+- Run markdown/spellcheck/link check per [validation checklist](testing/validation-checklist.md#lint-and-formatting): `yarn lint:markdown`, `yarn lint:spellcheck`, `yarn lint:docs-links`.
 - Redirect audit **not** required unless `redirects` or TypeDoc config also changed.
 
 ## Colocated TypeDoc reminder
